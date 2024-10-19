@@ -1,0 +1,7 @@
+#EXTM3U
+#EXTINF:9.5,
+segment_0.ts
+#EXTINF:10.0,
+segment_1.ts
+#EXTINF:2.833,
+segment_2.ts
