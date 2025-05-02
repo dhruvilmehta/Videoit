@@ -237,10 +237,12 @@ else:
                     if newphash1==currphash2:
                         if k+1<15: # doubt-----------------------------------------------------------
                             break
+                        print("-----------Deleted Frames-----------")
                         print(i, i+k, i/30, "-", (i+k)/30)
                         deleted.append((i,i+k-1))
                         i=i+k
                         print(i/30)
+                        print("----------------------")
                         flag=False
                         break
                 
@@ -252,10 +254,12 @@ else:
                         if currphash1==newphash2:
                             if k+1<15: # doubt-----------------------------------------------------------
                                 break
+                            print("-----------Added Frames-----------")
                             print(j, j+k, j/30, "-", (j+k)/30)
                             added.append((j,j+k-1))
                             j=j+k
                             print(j/30)
+                            print("----------------------")
                             flag=False
                             break
                     

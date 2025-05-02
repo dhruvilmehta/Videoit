@@ -1,38 +1,32 @@
-import express, { Request, Response } from 'express';
-import prisma from './prisma';
-import dotenv from 'dotenv'
-import cors from 'cors'
+import express from "express";
+import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import dotenv from "dotenv";
+import authRoutes from "./routes/auth";
+import videoRoutes from "./routes/video";
+import messageRoutes from "./routes/message";
+import { setupSocket } from "./sockets/chat";
+import { authMiddleware } from "./middleware/auth";
 
-dotenv.config()
+dotenv.config();
 
 const app = express();
-app.use(cors())
-
-app.get("/", (req: Request, res: Response) => {
-    res.send("Server running");
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: { origin: "http://localhost:5173" },
 });
 
-app.get("/getS3Url", async (req: Request, res: Response) => {
-    const videoId = req.params.videoId;
+app.use(cors({ origin: "http://localhost:5173" }));
+app.use(express.json());
 
-    const response = await prisma.video.findFirst({
-        where: {
-            id: videoId
-        },
-        select: {
-            url: true
-        }
-    })
+app.use("/api/auth", authRoutes);
+app.use("/api/videos", authMiddleware, videoRoutes);
+app.use("/api/messages", authMiddleware, messageRoutes);
 
-    res.status(200).json({ "url": response?.url })
-})
+setupSocket(io);
 
-app.get("/getVideos", async (req: Request, res: Response) => {
-    const response = await prisma.video.findMany();
-
-    res.status(200).json(response)
-})
-
-app.listen(3000, () => {
-    console.log("Listening on port 3000");
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

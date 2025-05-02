@@ -1,0 +1,31 @@
+To get Keyframes
+ffprobe -select_streams v -show_frames -show_entries frame=pts_time,pkt_dts_time,coded_picture_number,pict_type -of csv main.mp4 | grep I
+
+To generate streams for exactly 10 secs
+ffmpeg -i modifiedKeyFramesForMain.mp4 -c:v copy -c:a copy -f hls -hls_time 10 -hls_list_size 0 -hls_segment_filename "segment_%03d.ts" playlist.m3u8
+
+Divide the video according to timestamps
+ffmpeg -i deleted_15_frames.mp4 -ss 0 -t 9.5 -c:v copy -c:a copy segment_000.ts
+
+To divide the mp4 according to the frame range
+ffmpeg -i input.mp4 -vf "select='between(n\,0\,284)'" -c:v libx264 -c:a copy segment_000.ts
+ffmpeg -i input.mp4 -vf "select='between(n\,285\,584)'" -c:v libx264 -c:a copy segment_001.ts
+ffmpeg -i input.mp4 -vf "select='between(n\,585\,669)'" -c:v libx264 -c:a copy segment_002.ts
+
+--force divide
+-ss start time
+-t duration
+ffmpeg -i input.mp4 -ss 0 -t 9.5 -c:v libx264 -force_key_frames "expr:gte(t,n_forced*0.5)" -c:a aac -r 30 -f mpegts segment_000.ts
+
+
+To get Keyframes
+ffprobe -loglevel error -select_streams v:0 -show_entries packet=pts_time,flags -of csv=print_section=0 input.mp4
+
+
+To put keyframes at a particular frames
+ffmpeg -i deleted_15_frames.mp4 -c:v libx264 -force_key_frames "expr:eq(n,285)+eq(n,585)" -sc_threshold 0 -c:a aac -r 30 deleted_cleaned_input.mp4
+
+
+To merge hls streams
+ffmpeg -allowed_extensions ALL -i playlist.m3u8 -r 30 -c:v copy -c:a copy merged.mp4
+merges perfectly but fps changes from 30 to 29.34
